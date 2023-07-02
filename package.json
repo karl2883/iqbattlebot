@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "discord.js": "^14.11.0"
+  },
+  "name": "iqbattlebot",
+  "version": "1.0.0",
+  "description": "Discord bot for IQ battles! ",
+  "main": "main.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karl2883/iqbattlebot.git"
+  },
+  "author": "karl2883",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/karl2883/iqbattlebot/issues"
+  },
+  "homepage": "https://github.com/karl2883/iqbattlebot#readme"
+}
