@@ -7,6 +7,8 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
 
+client.parties = new Collection();
+
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -28,7 +30,6 @@ for (const folder of commandFolders) {
 
 client.once(Events.ClientReady, c => {
     console.log("The IQ Battle bot is now officially ready to objectively and accurately measure your IQ.");
-    
 });
 
 client.on(Events.InteractionCreate, async interaction => {
