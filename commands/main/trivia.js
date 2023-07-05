@@ -43,18 +43,33 @@ module.exports = {
             return;
         }
 
-        // check if party is actually running 
+        if (!party.isRunning()) {
+            await interaction.reply("The party has not been actually started yet! Do so with /begin.");
+            return;
+        }
 
         let target_user_id = interaction.options.getUser("target_user").id;
 
+
         if (!party.hasParticipant(interaction.user.id)) {
             await interaction.reply("You are not a participant of this party.");
+            return;
+        }
+        if (party.getCurrentTurnPlayer() != interaction.user.id) {
+            await interaction.reply("It's not your turn! Have some patience.");
             return;
         }
         if (!party.hasParticipant(target_user_id)) {
             await interaction.reply("The user you want to target with your question is not a participant of this party!");
             return;
         }
+
+        if (party.isInTriviaQuestion()) {
+            await interaction.reply("There is already a trivia question going on! Have some patience.");
+            return;
+        }
+
+        party.setChallenged(target_user_id);
 
         let questionPromise = fetchQuestion(interaction.options.getString("category"), interaction.options.getString("difficulty"));
 
@@ -63,7 +78,8 @@ module.exports = {
         let msgtext = `<@${interaction.user.id}> challenges <@${target_user_id}> to a trivia battle! Answer with the correct letter first to win!\nThe question will be revealed in... 5`;
 
         await interaction.reply(msgtext); 
-        console.log("h");
+
+        let currentPromise = null;
 
         for (let i=4; i>=0; i--) {
             msgtext = msgtext.slice(0, -1) + `${i}`;
@@ -71,12 +87,36 @@ module.exports = {
                 msgtext += '!';
             }
             await delay(1000);
-            await interaction.editReply(msgtext);
+            currentPromise = interaction.editReply(msgtext);
         }
+        await currentPromise;
 
         let question = await questionPromise;
+        let question_data = question.data[0];
 
-        await interaction.followUp(question.data[0].question.text);
+        let quiz_text = question_data.question.text + "\n";
+
+        let correct_answer_position = Math.floor(Math.random() * 4);
+        let correct_answer = question_data.correctAnswer;
+        let incorrect_answers = shuffleArray(question_data.incorrectAnswers);
+        
+        let letters = ["A", "B", "C", "D"];
+
+        for (let i=0; i<4; i++) {
+            let answer;
+            if (i == correct_answer_position) {
+                answer = correct_answer;
+            } else {
+                answer = incorrect_answers.pop();
+            }
+            quiz_text += `${letters[i]}) ${answer}\n`;
+        }
+
+        party.setCorrectAnswer(letters[correct_answer_position]);
+
+        await interaction.followUp(quiz_text);
+        
+        // timeout handling
     }
 }
 
@@ -95,4 +135,12 @@ async function fetchQuestion(category, difficulty) {
 
 function delay(time) {
   return new Promise(resolve => setTimeout(resolve, time));
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
